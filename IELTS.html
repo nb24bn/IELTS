@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive IELTS Teaching Material</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Academia -->
+    <!-- Application Structure Plan: The application uses a non-linear, dashboard-style hub-and-spoke model. The main page acts as a hub with navigation to the four core skills (Listening, Reading, Writing, Speaking) and a "Foundations" section. Clicking a skill smooth-scrolls the user to the relevant section. Within each skill's section, content is organized using interactive tabs for sub-topics (e.g., Writing Task 1, Task 2) and expandable accordion cards for individual lessons. This drill-down structure was chosen to make the vast curriculum manageable, allowing students to focus on specific areas without being overwhelmed by a long, linear document. It prioritizes user-driven exploration over a rigid, sequential path. The addition of interactive elements like audio recording and text input fields enhances engagement for practical application. -->
+    <!-- Visualization & Content Choices: Report Info: Overall course structure -> Goal: Provide top-level navigation -> Presentation: Large, clickable dashboard cards -> Interaction: onClick smooth scroll -> Justification: Intuitive entry point. | Report Info: Lessons within a skill -> Goal: Organize related content -> Presentation: Tabs -> Interaction: onClick to show/hide content panels -> Justification: Space-saving and logical grouping. | Report Info: Detailed lesson content (objectives, activities) -> Goal: Present details on demand -> Presentation: Accordion cards -> Interaction: onClick to expand/collapse -> Justification: Reduces cognitive load. | Report Info: IELTS Scoring System -> Goal: Explain scoring visually -> Presentation: Bar Chart (Chart.js) -> Interaction: Hover for tooltips, button to simulate score changes -> Justification: More engaging and clearer than text. | Report Info: Lists of strategies/tips, reading passages, listening scripts, writing prompts, speaking topics -> Goal: Provide core curriculum content -> Presentation: Styled HTML text, lists, and dedicated input areas (textarea, audio recorder) -> Interaction: Static text, text input, audio recording/playback/simulated upload -> Justification: Directly integrates the comprehensive teaching material and provides practical application opportunities. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* stone-50 */
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #0d9488; /* teal-600 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background-color: #0d9488; /* teal-600 */
+            color: #ffffff;
+        }
+        .accordion-header {
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+        }
+        .accordion-content.open {
+            max-height: 2000px; /* Adjust as needed for content */
+        }
+        .icon-plus {
+            transition: transform 0.3s ease;
+        }
+        .accordion-header.open .icon-plus {
+            transform: rotate(45deg);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+         @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="text-stone-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-2xl font-bold text-teal-700">IELTS Prep Hub</h1>
+                </div>
+                <nav class="hidden md:block">
+                    <div id="main-nav" class="ml-10 flex items-baseline space-x-2">
+                        <a href="#foundations" data-section="foundations" class="nav-button px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:bg-stone-200">Foundations</a>
+                        <a href="#listening" data-section="listening" class="nav-button px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:bg-stone-200">Listening</a>
+                        <a href="#reading" data-section="reading" class="nav-button px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:bg-stone-200">Reading</a>
+                        <a href="#writing" data-section="writing" class="nav-button px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:bg-stone-200">Writing</a>
+                        <a href="#speaking" data-section="speaking" class="nav-button px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:bg-stone-200">Speaking</a>
+                        <a href="#vocabulary" data-section="vocabulary" class="nav-button px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:bg-stone-200">Vocab & Grammar</a>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-bold tracking-tight text-stone-900 sm:text-5xl">Your Complete IELTS Preparation Guide</h2>
+            <p class="mt-4 text-lg leading-8 text-stone-600">An interactive curriculum designed to help you master every section of the IELTS exam. Click a module to begin your journey.</p>
+        </div>
+
+        <section id="dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+            <a href="#foundations" class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+                <div class="flex items-center gap-4">
+                    <div class="bg-amber-100 p-3 rounded-full"><span class="text-2xl">🏛️</span></div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-stone-800">Foundations</h3>
+                        <p class="text-stone-500 mt-1">Strategies, Scoring & Mock Tests</p>
+                    </div>
+                </div>
+            </a>
+            <a href="#listening" class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+                <div class="flex items-center gap-4">
+                     <div class="bg-teal-100 p-3 rounded-full"><span class="text-2xl">🎧</span></div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-stone-800">Listening</h3>
+                        <p class="text-stone-500 mt-1">Master all four listening sections</p>
+                    </div>
+                </div>
+            </a>
+            <a href="#reading" class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+                 <div class="flex items-center gap-4">
+                     <div class="bg-teal-100 p-3 rounded-full"><span class="text-2xl">📖</span></div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-stone-800">Reading</h3>
+                        <p class="text-stone-500 mt-1">Tackle any passage or question type</p>
+                    </div>
+                </div>
+            </a>
+             <a href="#writing" class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+                 <div class="flex items-center gap-4">
+                     <div class="bg-teal-100 p-3 rounded-full"><span class="text-2xl">✍️</span></div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-stone-800">Writing</h3>
+                        <p class="text-stone-500 mt-1">Craft high-scoring essays & reports</p>
+                    </div>
+                </div>
+            </a>
+             <a href="#speaking" class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+                 <div class="flex items-center gap-4">
+                     <div class="bg-teal-100 p-3 rounded-full"><span class="text-2xl">🗣️</span></div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-stone-800">Speaking</h3>
+                        <p class="text-stone-500 mt-1">Speak with fluency & confidence</p>
+                    </div>
+                </div>
+            </a>
+             <a href="#vocabulary" class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+                <div class="flex items-center gap-4">
+                    <div class="bg-amber-100 p-3 rounded-full"><span class="text-2xl">📚</span></div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-stone-800">Vocabulary & Grammar</h3>
+                        <p class="text-stone-500 mt-1">Build your lexical resources</p>
+                    </div>
+                </div>
+            </a>
+        </section>
+
+        <!-- Foundations Section -->
+        <section id="foundations" class="pt-20 -mt-20">
+            <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12">
+                <h2 class="text-3xl font-bold text-teal-700 mb-2">Foundations: Strategy, Scoring & Practice</h2>
+                <p class="text-stone-600 mb-6">This section covers the essential groundwork for your IELTS preparation. Understanding the test format, scoring, and overall strategies is the first step to success. Here you'll also find materials for mock tests and review.</p>
+                <div class="space-y-4">
+                    <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200">
+                        <div class="accordion-header flex justify-between items-center p-4">
+                            <h4 class="font-semibold text-lg">Lesson 1: What is IELTS?</h4>
+                            <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="p-4 border-t border-stone-200">
+                                <h5 class="font-semibold text-md mb-2">Objective:</h5>
+                                <p class="mb-4">Understand the purpose, format, and scoring of the IELTS exam.</p>
+                                <h5 class="font-semibold text-md mb-2">Content:</h5>
+                                <ul class="list-disc list-inside space-y-2 text-stone-600">
+                                    <li><span class="font-semibold">Purpose:</span> Why people take IELTS (study, work, migration).</li>
+                                    <li><span class="font-semibold">Test Formats:</span> Academic vs. General Training.</li>
+                                    <li><span class="font-semibold">Structure:</span> Overview of the four sections (Listening, Reading, Writing, Speaking).</li>
+                                    <li><span class="font-semibold">Scoring:</span> The 9-band scale and how the overall score is calculated.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200">
+                        <div class="accordion-header flex justify-between items-center p-4">
+                            <h4 class="font-semibold text-lg">Lesson 2: General Test-Taking Strategies</h4>
+                            <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="p-4 border-t border-stone-200">
+                                <h5 class="font-semibold text-md mb-2">Objective:</h5>
+                                <p class="mb-4">Learn universal strategies applicable across all sections of the test.</p>
+                                <h5 class="font-semibold text-md mb-2">Content:</h5>
+                                <ul class="list-disc list-inside space-y-2 text-stone-600">
+                                    <li><span class="font-semibold">Instructions:</span> Importance of reading and following instructions carefully.</li>
+                                    <li><span class="font-semibold">Time Management:</span> Pacing, avoiding getting stuck, and allocating time effectively.</li>
+                                    <li><span class="font-semibold">Keywords & Paraphrasing:</span> Identifying keywords and understanding synonyms.</li>
+                                    <li><span class="font-semibold">Anxiety Management:</span> Techniques for staying calm and focused.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200">
+                        <div class="accordion-header flex justify-between items-center p-4">
+                            <h4 class="font-semibold text-lg">Understanding Your Score</h4>
+                            <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="p-4 border-t border-stone-200">
+                                <p class="mb-4 text-stone-600">The IELTS Overall Band Score is the average of the four section scores, rounded to the nearest half-band. For example, if your scores are Listening 7.0, Reading 6.5, Writing 6.0, and Speaking 7.0, the average is 6.625, which rounds up to an Overall Band Score of 6.5. Use the chart below to visualize how scores combine.</p>
+                                <div class="chart-container">
+                                    <canvas id="scoreChart"></canvas>
+                                </div>
+                                <div class="text-center mt-4">
+                                    <button id="randomizeScores" class="bg-amber-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors">Simulate New Scores</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200">
+                        <div class="accordion-header flex justify-between items-center p-4">
+                            <h4 class="font-semibold text-lg">Reading Answer Key</h4>
+                            <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="p-4 border-t border-stone-200 text-stone-600">
+                                <h5 class="font-semibold text-md mb-2">Passage 1: Power of Habits</h5>
+                                <ul class="list-disc list-inside">
+                                    <li>1. To conserve energy</li>
+                                    <li>2. Cue, Routine, Reward</li>
+                                    <li>3. C</li>
+                                </ul>
+                                <h5 class="font-semibold text-md mb-2 mt-4">Passage 2: Urban Trees</h5>
+                                <ul class="list-disc list-inside">
+                                    <li>1. Trap pollutants, absorb CO₂</li>
+                                    <li>2. Pipelines & Drainage issues</li>
+                                    <li>3. False</li>
+                                </ul>
+                                <h5 class="font-semibold text-md mb-2 mt-4">Passage 3: History of Paper</h5>
+                                <ul class="list-disc list-inside">
+                                    <li>1. Cai Lun, ~100 BC</li>
+                                    <li>2. Animal skins, stone</li>
+                                    <li>3. Literacy</li>
+                                </ul>
+                                <h5 class="font-semibold text-md mb-2 mt-4">Passage 4: Animal Intelligence</h5>
+                                <ul class="list-disc list-inside">
+                                    <li>1. Dolphins use tools, etc.</li>
+                                    <li>2. Count, respond in English</li>
+                                    <li>3. Not Given</li>
+                                </ul>
+                                <h5 class="font-semibold text-md mb-2 mt-4">Passage 5: Solar Power</h5>
+                                <ul class="list-disc list-inside">
+                                    <li>1. No emissions</li>
+                                    <li>2. Weather & Space</li>
+                                    <li>3. Battery storage</li>
+                                </ul>
+                                <h5 class="font-semibold text-md mb-2 mt-4">Passage 6: Lichens</h5>
+                                <ul class="list-disc list-inside">
+                                    <li>A: ii</li>
+                                    <li>B: i</li>
+                                    <li>1. False</li>
+                                    <li>2. True</li>
+                                </ul>
+                                <h5 class="font-semibold text-md mb-2 mt-4">Passage 7: Decision Making</h5>
+                                <ul class="list-disc list-inside">
+                                    <li>1. First information</li>
+                                    <li>2. Losses</li>
+                                    <li>3. B</li>
+                                </ul>
+                                <h5 class="font-semibold text-md mb-2 mt-4">Passage 8: Disappearance of Bees</h5>
+                                <ul class="list-disc list-inside">
+                                    <li>1. B (disease)</li>
+                                    <li>2. B (agriculture)</li>
+                                    <li>3. Not Given</li>
+                                    <li>4. Yes</li>
+                                </ul>
+                                <h5 class="font-semibold text-md mb-2 mt-4">Passage 9: AI in Medicine</h5>
+                                <ul class="list-disc list-inside">
+                                    <li>1. C</li>
+                                    <li>2. True</li>
+                                    <li>3. False</li>
+                                </ul>
+                                <h5 class="font-semibold text-md mb-2 mt-4">Passage 10: Mars Colonization</h5>
+                                <ul class="list-disc list-inside">
+                                    <li>1. Breathable</li>
+                                    <li>2. Support/Sustainable systems</li>
+                                    <li>A: ii</li>
+                                    <li>B: i</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Listening Section -->
+        <section id="listening" class="pt-20 -mt-20">
+            <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12">
+                <h2 class="text-3xl font-bold text-teal-700 mb-2">🎧 Listening Module</h2>
+                <p class="text-stone-600 mb-6">Develop your ability to understand main ideas, specific details, and the attitudes of speakers across various authentic English contexts. Remember, each recording is played only once!</p>
+                <div class="mb-6 flex flex-wrap gap-2" id="listening-tabs">
+                    <button class="tab-button active px-4 py-2 text-sm font-semibold rounded-full bg-stone-200" data-target="listening-intro">Overview & Principles</button>
+                    <button class="tab-button px-4 py-2 text-sm font-semibold rounded-full bg-stone-200" data-target="listening-s1">Section 1</button>
+                    <button class="tab-button px-4 py-2 text-sm font-semibold rounded-full bg-stone-200" data-target="listening-s2">Section 2</button>
+                    <button class="tab-button px-4 py-2 text-sm font-semibold rounded-full bg-stone-200" data-target="listening-s3">Section 3</button>
+                    <button class="tab-button px-4 py-2 text-sm font-semibold rounded-full bg-stone-200" data-target="listening-s4">Section 4</button>
+                </div>
+                <div id="listening-content">
+                    <div class="tab-content" id="listening-intro">
+                        <h3 class="text-xl font-semibold mb-4 text-stone-800">General Listening Principles</h3>
+                        <ul class="space-y-3">
+                           <li class="flex items-start"><span class="text-amber-500 font-bold text-xl mr-3">✓</span><div><span class="font-semibold">One Chance Only:</span> Recordings are played only once. Concentration is key.</div></li>
+                           <li class="flex items-start"><span class="text-amber-500 font-bold text-xl mr-3">✓</span><div><span class="font-semibold">Predict Information:</span> Use the time before each section to read questions, underline keywords, and predict context/answers.</div></li>
+                           <li class="flex items-start"><span class="text-amber-500 font-bold text-xl mr-3">✓</span><div><span class="font-semibold">Spelling & Grammar:</span> Correct spelling and grammar in answers is crucial.</div></li>
+                           <li class="flex items-start"><span class="text-amber-500 font-bold text-xl mr-3">✓</span><div><span class="font-semibold">Note-Taking:</span> Encourage active listening and effective note-taking, especially for longer monologues.</div></li>
+                        </ul>
+                        <h3 class="text-xl font-semibold mb-4 mt-6 text-stone-800">How to Prepare for Listening</h3>
+                        <ul class="list-disc list-inside space-y-2 text-stone-600">
+                            <li><span class="font-semibold">Practice with different accents:</span> Expose yourself to British, Australian, American, and other English accents.</li>
+                            <li><span class="font-semibold">Improve note-taking:</span> Develop a system for quickly jotting down key information.</li>
+                            <li><span class="font-semibold">Understand question types:</span> Familiarize yourself with all question formats (e.g., multiple choice, form completion, map labeling).</li>
+                            <li><span class="font-semibold">Listen actively:</span> Focus on the overall meaning, speaker's attitude, and specific details.</li>
+                            <li><span class="font-semibold">Review answers:</span> After practice, analyze why you got answers wrong and learn from mistakes.</li>
+                        </ul>
+                    </div>
+                    <div class="tab-content hidden" id="listening-s1">
+                        <h3 class="text-xl font-semibold mb-2">Section 1: Form Completion - Apollo Car Rentals</h3>
+                        <p class="mb-4 text-stone-600">Context: A conversation between Ben (Apollo Car Rentals) and Carol (customer).</p>
+                        <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200">
+                            <div class="accordion-header flex justify-between items-center p-4">
+                                <h4 class="font-semibold text-lg">Audio Script</h4>
+                                <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="p-4 border-t border-stone-200 text-stone-600">
+                                    <p><span class="font-semibold">Ben:</span> Good morning, Madam. Welcome to Apollo Car Rentals.</p>
+                                    <p><span class="font-semibold">Carol:</span> Good morning. I’d like to rent a car.</p>
+                                    <p><span class="font-semibold">Ben:</span> Sure. When would you like to pick it up?</p>
+                                    <p><span class="font-semibold">Carol:</span> This afternoon, around 3 pm.</p>
+                                    <p><span class="font-semibold">Ben:</span> That’s fine – could you collect it from the depot on Oak Street?</p>
+                                    <p><span class="font-semibold">Carol:</span> Yes, at Oak Street depot, thanks.</p>
+                                    <p><span class="font-semibold">Ben:</span> And will you return it on Saturday morning?</p>
+                                    <p><span class="font-semibold">Carol:</span> Yes, before 10 am.</p>
+                                    <p><span class="font-semibold">Ben:</span> Great. The rate is £70 per night including insurance.</p>
+                                    <p><span class="font-semibold">Carol:</span> Perfect, thank you!</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mt-4">
+                            <div class="accordion-header flex justify-between items-center p-4">
+                                <h4 class="font-semibold text-lg">Questions (Fill in the Blanks)</h4>
+                                <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="p-4 border-t border-stone-200 text-stone-600">
+                                    <ol class="list-decimal list-inside space-y-2">
+                                        <li>Customer Name: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                        <li>Pick-up Day & Time: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                        <li>Pick-up Location: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                        <li>Return Day & Time: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                        <li>Total Nights Booked: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                        <li>Daily Rental Fee: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                        <li>Insurance Included?: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                        <li>Type of Car Requested: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                        <li>Contact Number: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                        <li>Payment Method: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-content hidden" id="listening-s2">
+                        <h3 class="text-xl font-semibold mb-2">Section 2: City History Museum Tour</h3>
+                        <p class="mb-4 text-stone-600">Context: A guide gives a tour of the City History Museum, describing its layout and rules.</p>
+                        <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200">
+                            <div class="accordion-header flex justify-between items-center p-4">
+                                <h4 class="font-semibold text-lg">Audio Script</h4>
+                                <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="p-4 border-t border-stone-200 text-stone-600">
+                                    <p><span class="font-semibold">Guide:</span> Good morning, everyone. Welcome to the City History Museum. The museum has five main sections — all arranged in a circular layout.</p>
+                                    <p>We’ll begin in Room A, where you’ll see ancient coins and weapons. Then you can move to Room B, which is our textile gallery showing traditional garments.</p>
+                                    <p>Room C, directly opposite the entrance, holds a collection of early tools used in farming.</p>
+                                    <p>To the left of that is Room D, dedicated to maps and old ship routes. And finally, in Room E, we’ve recreated a 17th-century house — complete with furniture.</p>
+                                    <p>The café is next to Room A, and toilets are behind Room E. The gift shop is between Rooms C and D.</p>
+                                    <p>You’re free to explore, but please don’t touch the displays. You can take photos — but no flash, please. The museum closes at 5 PM. Enjoy your visit!</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mt-4">
+                            <div class="accordion-header flex justify-between items-center p-4">
+                                <h4 class="font-semibold text-lg">Questions (Map/Room Labelling & Short Answer)</h4>
+                                <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="p-4 border-t border-stone-200 text-stone-600">
+                                    <h5 class="font-semibold text-md mb-2">Part A: Map / Room Labelling (Write the correct room letter A–E)</h5>
+                                    <ol class="list-decimal list-inside space-y-2">
+                                        <li>Where are ancient coins and weapons? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></li>
+                                        <li>Which room has textile exhibits? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></li>
+                                        <li>Where can you find early farm tools? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></li>
+                                        <li>Which room displays old maps and ship routes? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></li>
+                                        <li>Which room features a recreated house? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></li>
+                                    </ol>
+                                    <h5 class="font-semibold text-md mb-2 mt-4">Part B: Short Answer Questions</h5>
+                                    <ol class="list-decimal list-inside space-y-2" start="6">
+                                        <li>What is located next to Room A? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                        <li>Where are the toilets situated? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                        <li>What is between Room C and D? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                        <li>What type of photography is not allowed? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                        <li>At what time does the museum close? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"></li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-content hidden" id="listening-s3">
+                        <h3 class="text-xl font-semibold mb-2">Section 3: Climate Change Project Discussion</h3>
+                        <p class="mb-4 text-stone-600">Context: Two university students, Emma and Raj, discuss their group project on climate change with their tutor, Dr. Lee.</p>
+                        <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200">
+                            <div class="accordion-header flex justify-between items-center p-4">
+                                <h4 class="font-semibold text-lg">Audio Script</h4>
+                                <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="p-4 border-t border-stone-200 text-stone-600">
+                                    <p><span class="font-semibold">Emma:</span> Hello Dr. Lee, we’ve been working on our group presentation on climate change solutions.</p>
+                                    <p><span class="font-semibold">Raj:</span> Yes, we divided it into three parts — Emma is covering renewable energy, I’m discussing carbon taxes, and our third member, Lina, is presenting on lifestyle changes.</p>
+                                    <p><span class="font-semibold">Dr. Lee:</span> Good. Have you decided how you’ll start the presentation?</p>
+                                    <p><span class="font-semibold">Emma:</span> I was thinking of beginning with a short video showing the impact of climate change — it’s under two minutes.</p>
+                                    <p><span class="font-semibold">Dr. Lee:</span> That sounds engaging. What sources did you use for your research?</p>
+                                    <p><span class="font-semibold">Raj:</span> Mostly government and university websites. I avoided blogs because they weren’t reliable.</p>
+                                    <p><span class="font-semibold">Dr. Lee:</span> That’s smart. And how are you dividing the speaking time?</p>
+                                    <p><span class="font-semibold">Emma:</span> Lina gets 4 minutes, Raj gets 5, and I’ll speak for 6 minutes because my section is longer.</p>
+                                    <p><span class="font-semibold">Dr. Lee:</span> Sounds well-planned. Just make sure you don’t read from your notes.</p>
+                                    <p><span class="font-semibold">Emma:</span> Got it! We’re also including a short Q&A at the end.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mt-4">
+                            <div class="accordion-header flex justify-between items-center p-4">
+                                <h4 class="font-semibold text-lg">Questions (Multiple Choice & Matching Speaker)</h4>
+                                <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="p-4 border-t border-stone-200 text-stone-600">
+                                    <h5 class="font-semibold text-md mb-2">Part A: Multiple Choice (Choose A, B, or C)</h5>
+                                    <ol class="list-decimal list-inside space-y-2">
+                                        <li>What topic will Emma talk about?<br>
+                                            <input type="radio" name="s3q1" value="A"> A. Carbon emissions<br>
+                                            <input type="radio" name="s3q1" value="B"> B. Renewable energy<br>
+                                            <input type="radio" name="s3q1" value="C"> C. Climate disasters
+                                        </li>
+                                        <li>How will the presentation begin?<br>
+                                            <input type="radio" name="s3q2" value="A"> A. With a graph<br>
+                                            <input type="radio" name="s3q2" value="B"> B. With a video<br>
+                                            <input type="radio" name="s3q2" value="C"> C. With a quote
+                                        </li>
+                                        <li>Which sources did Raj mainly use?<br>
+                                            <input type="radio" name="s3q3" value="A"> A. Blogs<br>
+                                            <input type="radio" name="s3q3" value="B"> B. YouTube<br>
+                                            <input type="radio" name="s3q3" value="C"> C. Government websites
+                                        </li>
+                                        <li>Why does Emma speak the longest?<br>
+                                            <input type="radio" name="s3q4" value="A"> A. She has more experience<br>
+                                            <input type="radio" name="s3q4" value="B"> B. Her topic has more content<br>
+                                            <input type="radio" name="s3q4" value="C"> C. She volunteered to start
+                                        </li>
+                                        <li>What advice does Dr. Lee give?<br>
+                                            <input type="radio" name="s3q5" value="A"> A. Avoid using complex vocabulary<br>
+                                            <input type="radio" name="s3q5" value="B"> B. Keep it short<br>
+                                            <input type="radio" name="s3q5" value="C"> C. Don’t read directly from notes
+                                        </li>
+                                    </ol>
+                                    <h5 class="font-semibold text-md mb-2 mt-4">Part B: Matching Speaker (A = Emma, B = Raj, C = Dr. Lee)</h5>
+                                    <ul class="list-disc list-inside space-y-2">
+                                        <li>6. Will speak for 4 minutes: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></li>
+                                        <li>7. Talks about carbon taxes: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></li>
+                                        <li>8. Mentions adding a Q&A session: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></li>
+                                        <li>9. Suggests using a video at the start: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></li>
+                                        <li>10. Reminds students to avoid reading notes: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-content hidden" id="listening-s4">
+                        <h3 class="text-xl font-semibold mb-2">Section 4: The Psychology of Productivity</h3>
+                        <p class="mb-4 text-stone-600">Context: A university lecture by Professor Grant on "The Psychology of Productivity."</p>
+                        <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200">
+                            <div class="accordion-header flex justify-between items-center p-4">
+                                <h4 class="font-semibold text-lg">Audio Script</h4>
+                                <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="p-4 border-t border-stone-200 text-stone-600">
+                                    <p><span class="font-semibold">Professor Grant:</span> Good morning, everyone. Today’s lecture focuses on the psychological factors that influence productivity, both in individuals and organizations.</p>
+                                    <p>Let’s begin with goal setting — studies show that people are more productive when their goals are specific and time-bound. Vague goals like “do better” are less effective than clear ones like “complete the report by Friday.”</p>
+                                    <p>Another factor is environment. A noisy or cluttered space can significantly reduce focus. In contrast, environments with natural light and greenery tend to improve attention and reduce stress.</p>
+                                    <p>We also examine time management techniques. The Pomodoro Technique, for example, involves 25 minutes of focused work followed by a short break. This improves mental endurance over time.</p>
+                                    <p>Finally, motivation plays a key role. Intrinsic motivation — doing something because it's personally rewarding — often leads to better long-term performance than external rewards like money.</p>
+                                    <p>To summarize: the most effective strategies combine goal clarity, environmental design, time discipline, and motivation. Together, they shape how well we perform mentally and physically.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mt-4">
+                            <div class="accordion-header flex justify-between items-center p-4">
+                                <h4 class="font-semibold text-lg">Questions (Summary & Sentence Completion)</h4>
+                                <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="p-4 border-t border-stone-200 text-stone-600">
+                                    <h5 class="font-semibold text-md mb-2">Part A: Summary Completion (Complete the summary using words from the lecture)</h5>
+                                    <p>The lecture discusses how psychological elements affect productivity. For example, (1) <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"> goals are more effective than vague ones. A good work (2) <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"> includes daylight and plants.</p>
+                                    <p>The Pomodoro Technique promotes sustained focus by scheduling (3) <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32">. Finally, internal or (4) <input type="text" class="border border-stone-300 rounded px-2 py-1 w-32"> motivation is often more sustainable than financial rewards.</p>
+                                    <h5 class="font-semibold text-md mb-2 mt-4">Part B: Sentence Completion</h5>
+                                    <ol class="list-decimal list-inside space-y-2" start="5">
+                                        <li>Vague goals like “do better” are not as effective as goals that are <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40">.</li>
+                                        <li>Greenery in a workspace can help reduce <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40">.</li>
+                                        <li>The Pomodoro Technique breaks work into short <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40">.</li>
+                                        <li>Working with a clear objective increases <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40">.</li>
+                                        <li>People often focus better in environments with <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40">.</li>
+                                        <li>Doing something because it is personally rewarding is called <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"> motivation</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reading Section -->
+        <section id="reading" class="pt-20 -mt-20">
+             <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12">
+                <h2 class="text-3xl font-bold text-teal-700 mb-2">📖 Reading Module</h2>
+                <p class="text-stone-600 mb-6">Master the skills to read for gist, detail, and logical argument. Learn strategies for all question types to conquer the 60-minute reading challenge.</p>
+                <div class="mb-6 flex flex-wrap gap-2" id="reading-tabs">
+                     <button class="tab-button active px-4 py-2 text-sm font-semibold rounded-full bg-stone-200" data-target="reading-intro">Core Skills</button>
+                     <button class="tab-button px-4 py-2 text-sm font-semibold rounded-full bg-stone-200" data-target="reading-passages">Practice Passages</button>
+                     <button class="tab-button px-4 py-2 text-sm font-semibold rounded-full bg-stone-200" data-target="reading-tips">Tips for Difficult Questions</button>
+                </div>
+                 <div id="reading-content">
+                    <div class="tab-content" id="reading-intro">
+                        <h3 class="text-xl font-semibold mb-4 text-stone-800">Core Reading Skills: Skimming & Scanning</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-stone-50 p-4 rounded-lg border border-stone-200">
+                                <h4 class="font-semibold text-lg mb-2">Skimming</h4>
+                                <p>Reading quickly to get the main idea or gist of a text or paragraph. Ask yourself: What is this passage generally about?</p>
+                            </div>
+                            <div class="bg-stone-50 p-4 rounded-lg border border-stone-200">
+                                <h4 class="font-semibold text-lg mb-2">Scanning</h4>
+                                <p>Reading quickly to find specific information like names, dates, numbers, or keywords. You are not trying to understand; you are trying to locate.</p>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4 mt-6 text-stone-800">General Reading Tips</h3>
+                        <ul class="list-disc list-inside space-y-2 text-stone-600">
+                            <li><span class="font-semibold">Time Management:</span> You have 60 minutes for 40 questions. Allocate approximately 20 minutes per passage.</li>
+                            <li><span class="font-semibold">Don't Panic:</span> It's okay not to understand every single word. Focus on the words related to the question.</li>
+                            <li><span class="font-semibold">Vocabulary is Key:</span> A wide range of vocabulary and understanding of synonyms are crucial for success.</li>
+                            <li><span class="font-semibold">Read Instructions Carefully:</span> Pay close attention to word limits (e.g., "NO MORE THAN THREE WORDS").</li>
+                            <li><span class="font-semibold">Practice Regularly:</span> The more you read, the faster and more efficient you will become.</li>
+                        </ul>
+                    </div>
+                     <div class="tab-content hidden" id="reading-passages">
+                         <h3 class="text-xl font-semibold mb-4 text-stone-800">Reading Practice Passages</h3>
+                         <p class="mb-4 text-stone-600">Work through these passages and answer the questions. Remember to apply your reading strategies! You can find the answer key in the "Foundations" section.</p>
+
+                         <!-- Passage 1 -->
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Passage 1: The Power of Habits</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <h5 class="font-semibold text-md mb-2">Paragraph A</h5>
+                                     <p>Habits are routines of behavior that are repeated regularly and tend to occur subconsciously. Psychologists believe that our brains form habits to conserve energy. When we act out of habit, we make fewer decisions, which reduces mental fatigue. From brushing our teeth to driving to work, habits shape much of our daily behavior.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Paragraph B</h5>
+                                     <p>In his book The Power of Habit, Charles Duhigg explains the habit loop: cue, routine, reward. A cue triggers a behavior, the routine is the behavior itself, and the reward reinforces the habit. For instance, a person feels stressed (cue), eats chocolate (routine), and feels better (reward). Over time, this loop becomes automatic.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Questions (Short Answer / MCQ)</h5>
+                                     <ol class="list-decimal list-inside space-y-2">
+                                         <li>What is the main reason our brain forms habits? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"></li>
+                                         <li>According to the passage, what are the three parts of a habit loop? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"></li>
+                                         <li>Choose the correct answer: What is the function of a reward in the habit loop?<br>
+                                            <input type="radio" name="p1q3" value="a"> a) It stops the habit<br>
+                                            <input type="radio" name="p1q3" value="b"> b) It triggers stress<br>
+                                            <input type="radio" name="p1q3" value="c"> c) It strengthens the habit<br>
+                                            <input type="radio" name="p1q3" value="d"> d) It causes decision fatigue
+                                        </li>
+                                     </ol>
+                                 </div>
+                             </div>
+                         </div>
+                         <!-- Passage 2 -->
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Passage 2: Urban Trees and Air Quality</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <h5 class="font-semibold text-md mb-2">Paragraph A</h5>
+                                     <p>Urban trees are increasingly being planted in cities to combat pollution. Their leaves trap particulate matter, and their roots absorb carbon dioxide. Cities like Singapore and Tokyo have seen a noticeable drop in pollution levels after planting more greenery.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Paragraph B</h5>
+                                     <p>However, urban forestry also poses challenges. Tree roots can damage underground pipelines, and fallen leaves may block drainage systems during the rainy season. Despite this, experts argue that the benefits outweigh the disadvantages if proper planning is in place.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Questions (Short Answer / T/F)</h5>
+                                     <ol class="list-decimal list-inside space-y-2">
+                                         <li>What role do trees play in improving air quality? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"></li>
+                                         <li>What are two problems caused by urban trees? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"></li>
+                                         <li>True or False: “All experts agree that trees should not be planted in urban areas.” <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></li>
+                                     </ol>
+                                 </div>
+                             </div>
+                         </div>
+                         <!-- Passage 3 -->
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Passage 3: The History of Paper</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <h5 class="font-semibold text-md mb-2">Paragraph A</h5>
+                                     <p>The invention of paper dates back to ancient China, around 100 BC. Cai Lun, a court official, is credited with developing a paper-making technique using bark, hemp, and cloth rags. This invention eventually spread to the Arab world and later to Europe.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Paragraph B</h5>
+                                     <p>Before paper, people wrote on materials such as animal skins (parchment) or stone. Paper was cheaper and easier to produce, which led to a dramatic rise in literacy rates across civilizations. The printing press further accelerated this change.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Questions (Short Answer / Fill in the Blank)</h5>
+                                     <ol class="list-decimal list-inside space-y-2">
+                                         <li>Who is credited with inventing paper, and when? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"></li>
+                                         <li>What materials were used before paper was invented? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"></li>
+                                         <li>Fill in the blank: “Paper contributed to higher <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"> rates in societies.”</li>
+                                     </ol>
+                                 </div>
+                             </div>
+                         </div>
+                         <!-- Passage 4 -->
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Passage 4: Animal Intelligence</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <h5 class="font-semibold text-md mb-2">Paragraph A</h5>
+                                     <p>While once thought to be purely instinctual creatures, many animals display signs of intelligence. Dolphins use tools, elephants grieve their dead, and certain species of birds can solve complex puzzles. Intelligence in animals is now measured through memory, problem-solving, and adaptability.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Paragraph B</h5>
+                                     <p>One famous example is the African grey parrot named Alex. Trained by psychologist Irene Pepperberg, Alex could count, recognize colors, and even respond to basic questions using English words. His abilities challenged the traditional view of “bird brains.”</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Questions (Short Answer / Y/N/NG)</h5>
+                                     <ol class="list-decimal list-inside space-y-2">
+                                         <li>Name two examples of intelligent animal behavior. <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"></li>
+                                         <li>What made the parrot Alex special? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"></li>
+                                         <li>Yes / No / Not Given: “Alex the parrot was able to write words.” <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></li>
+                                     </ol>
+                                 </div>
+                             </div>
+                         </div>
+                         <!-- Passage 5 -->
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Passage 5: Solar Power and the Future</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <h5 class="font-semibold text-md mb-2">Paragraph A</h5>
+                                     <p>Solar power is a renewable energy source that has gained popularity due to its environmental benefits. Solar panels convert sunlight into electricity without releasing harmful emissions. Countries like Germany and India are investing heavily in solar infrastructure.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Paragraph B</h5>
+                                     <p>Still, solar power has limitations. It is weather-dependent and requires large space for installation. Battery storage solutions are being explored to make solar energy more consistent, especially during cloudy days and nighttime.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Questions (Short Answer / Fill in the Blank)</h5>
+                                     <ol class="list-decimal list-inside space-y-2">
+                                         <li>Why is solar power considered eco-friendly? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"></li>
+                                         <li>What are two challenges of solar energy mentioned? <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"></li>
+                                         <li>Complete the sentence: “To store energy when the sun isn’t shining, scientists are exploring <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"> solutions.”</li>
+                                     </ol>
+                                 </div>
+                             </div>
+                         </div>
+                         <!-- Passage 6 -->
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Passage 6: The Role of Lichens in Ecosystems</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <h5 class="font-semibold text-md mb-2">Paragraph A</h5>
+                                     <p>Lichens are unique organisms formed by the symbiotic relationship between fungi and algae. They can survive in extreme environments—from Arctic tundra to desert rocks—making them excellent bioindicators of environmental health.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Paragraph B</h5>
+                                     <p>Researchers often monitor lichen populations to detect air pollution levels, especially sulfur dioxide. When pollution increases, many lichen species vanish rapidly, offering a natural alert system for ecologists.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Questions (Matching Headings / T/F/NG)</h5>
+                                     <ol class="list-decimal list-inside space-y-2">
+                                         <li>Matching Headings:<br>
+                                            <p>o A. <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"></p>
+                                            <p>o B. <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"></p>
+                                            <p>(Options: i. Lichens and Pollution, ii. Adaptation of Lichens, iii. Fungi and Their Reproduction)</p>
+                                        </li>
+                                         <li>True / False / Not Given:<br>
+                                            <p>o Lichens thrive in polluted environments. <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></p>
+                                            <p>o Scientists use lichens to study changes in air quality. <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></p>
+                                        </li>
+                                     </ol>
+                                 </div>
+                             </div>
+                         </div>
+                         <!-- Passage 7 -->
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Passage 7: The Psychology of Decision Making</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <h5 class="font-semibold text-md mb-2">Paragraph A</h5>
+                                     <p>Humans often assume that decisions are logical, but psychologists argue that many are driven by unconscious biases. The "anchoring effect," for example, occurs when people rely too heavily on the first piece of information they receive.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Paragraph B</h5>
+                                     <p>Another bias, "loss aversion," explains why people fear losses more than they value equivalent gains. This explains why investors often hold onto declining stocks longer than is rational—hoping to avoid realizing a loss.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Questions (Summary Completion / MCQ)</h5>
+                                     <ol class="list-decimal list-inside space-y-2">
+                                         <li>Summary Completion (Use NO MORE THAN TWO WORDS):<br>
+                                            <p>o The anchoring effect causes people to depend on <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40">.</p>
+                                            <p>o Loss aversion makes people fear <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40">.</p>
+                                        </li>
+                                         <li>Multiple Choice:<br>
+                                            <p>o What does “loss aversion” lead to?</p>
+                                            <input type="radio" name="p7q2" value="A"> A. Better decision-making<br>
+                                            <input type="radio" name="p7q2" value="B"> B. Refusal to accept losses<br>
+                                            <input type="radio" name="p7q2" value="C"> C. More logical thinking<br>
+                                            <input type="radio" name="p7q2" value="D"> D. Buying cheaper products
+                                        </li>
+                                     </ol>
+                                 </div>
+                             </div>
+                         </div>
+                         <!-- Passage 8 -->
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Passage 8: The Disappearance of the Bees</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <h5 class="font-semibold text-md mb-2">Paragraph A</h5>
+                                     <p>Bee populations worldwide are in decline, a phenomenon known as Colony Collapse Disorder (CCD). Beekeepers report that entire hives vanish overnight, leaving behind the queen and a few immature bees.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Paragraph B</h5>
+                                     <p>Scientists attribute CCD to multiple causes: pesticide exposure, habitat loss, and diseases such as varroa mites. Since bees pollinate one-third of the food we eat, their decline poses a serious threat to global agriculture.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Questions (Matching Info / Y/N/NG)</h5>
+                                     <ol class="list-decimal list-inside space-y-2">
+                                         <li>Matching Information: Which paragraph mentions...<br>
+                                            <p>o A named disease affecting bees <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></p>
+                                            <p>o The role bees play in agriculture <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></p>
+                                        </li>
+                                         <li>Yes / No / Not Given:<br>
+                                            <p>o Beekeepers are increasing the number of hives annually. <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></p>
+                                            <p>o Pesticides may contribute to CCD. <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></p>
+                                        </li>
+                                     </ol>
+                                 </div>
+                             </div>
+                         </div>
+                         <!-- Passage 9 -->
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Passage 9: Artificial Intelligence in Medical Diagnosis</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <h5 class="font-semibold text-md mb-2">Paragraph A</h5>
+                                     <p>AI algorithms can now detect diseases like cancer and diabetes with surprising accuracy. These systems are trained on massive datasets, enabling them to identify patterns often missed by human doctors.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Paragraph B</h5>
+                                     <p>Despite these advances, critics argue that AI lacks the empathy and contextual judgment essential for patient care. Additionally, ethical concerns have been raised about data privacy and decision accountability.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Questions (MCQ / T/F/NG)</h5>
+                                     <ol class="list-decimal list-inside space-y-2">
+                                         <li>Multiple Choice:<br>
+                                            <p>o Why is AI praised in medicine?</p>
+                                            <input type="radio" name="p9q1" value="A"> A. It replaces all doctors<br>
+                                            <input type="radio" name="p9q1" value="B"> B. It removes emotional bias<br>
+                                            <input type="radio" name="p9q1" value="C"> C. It detects hidden patterns in data<br>
+                                            <input type="radio" name="p9q1" value="D"> D. It works without training
+                                        </li>
+                                         <li>True / False / Not Given:<br>
+                                            <p>o Some critics question AI’s ability to provide emotional support. <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></p>
+                                            <p>o AI algorithms are manually programmed with answers. <input type="text" class="border border-stone-300 rounded px-2 py-1 w-20"></p>
+                                        </li>
+                                     </ol>
+                                 </div>
+                             </div>
+                         </div>
+                         <!-- Passage 10 -->
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Passage 10: Mars Colonization – A Future Frontier</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <h5 class="font-semibold text-md mb-2">Paragraph A</h5>
+                                     <p>With missions like NASA’s Artemis program and Elon Musk’s SpaceX, Mars colonization is no longer a distant dream. Technological advancements in propulsion and life-support systems make manned missions more feasible than ever.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Paragraph B</h5>
+                                     <p>Yet, challenges remain. Mars lacks a breathable atmosphere and has high radiation levels. Sustainable food and energy sources will need to be developed to support long-term survival.</p>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Questions (Summary Completion / Matching Headings)</h5>
+                                     <ol class="list-decimal list-inside space-y-2">
+                                         <li>Summary Completion:<br>
+                                            <p>o Mars lacks a <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"> atmosphere.</p>
+                                            <p>o Life on Mars would require new <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"> systems.</p>
+                                        </li>
+                                         <li>Matching Headings:<br>
+                                            <p>o Paragraph A: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"></p>
+                                            <p>o Paragraph B: <input type="text" class="border border-stone-300 rounded px-2 py-1 w-40"></p>
+                                            <p>(Options: i. Barriers to Space Colonization, ii. Future of Human Space Travel, iii. History of Mars Missions)</p>
+                                        </li>
+                                     </ol>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                     <div class="tab-content hidden" id="reading-tips">
+                         <h3 class="text-xl font-semibold mb-4 text-stone-800">Tips for Difficult Reading Question Types</h3>
+                         <ul class="list-disc list-inside space-y-3 text-stone-600">
+                             <li><span class="font-semibold">True / False / Not Given:</span> Match exact facts. "Not Given" means no information in the text. Avoid guessing.</li>
+                             <li><span class="font-semibold">Matching Headings:</span> Skim each paragraph for the main idea, not small details.</li>
+                             <li><span class="font-semibold">Summary Completion:</span> Use only words from the text; check grammar fits.</li>
+                             <li><span class="font-semibold">Multiple Choice:</span> Eliminate wrong answers first. Focus on keywords & synonyms.</li>
+                             <li><span class="font-semibold">Matching Information:</span> Scan for specific names, years, or keywords in each paragraph.</li>
+                         </ul>
+                     </div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- Writing Section -->
+        <section id="writing" class="pt-20 -mt-20">
+             <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12">
+                <h2 class="text-3xl font-bold text-teal-700 mb-2">✍️ Writing Module</h2>
+                <p class="text-stone-600 mb-6">Learn to write coherent, well-structured, and grammatically accurate responses. This section covers report writing for Task 1 and essay writing for Task 2. You can practice your writing directly here!</p>
+                 <div class="mb-6 flex flex-wrap gap-2" id="writing-tabs">
+                     <button class="tab-button active px-4 py-2 text-sm font-semibold rounded-full bg-stone-200" data-target="writing-task1">Task 1 (Academic)</button>
+                     <button class="tab-button px-4 py-2 text-sm font-semibold rounded-full bg-stone-200" data-target="writing-task1-gt">Task 1 (General)</button>
+                     <button class="tab-button px-4 py-2 text-sm font-semibold rounded-full bg-stone-200" data-target="writing-task2">Task 2 (Essay)</button>
+                 </div>
+                 <div id="writing-content">
+                     <div class="tab-content" id="writing-task1">
+                         <h3 class="text-xl font-semibold mb-2">Academic Writing Task 1: Line Graph Activity</h3>
+                         <p class="mb-4 text-stone-600">Your task is to summarize the information by selecting and reporting the main features from the graph below, and make comparisons where relevant. Write at least 150 words.</p>
+                         <div class="bg-stone-100 p-4 rounded-lg mb-6">
+                            <h4 class="font-semibold text-lg mb-2">Prompt: Percentage of People Using the Internet in Five Countries (2000-2020)</h4>
+                            <img src="https://placehold.co/600x400/E0F2F7/263238?text=IELTS+Line+Graph+Placeholder" alt="Line Graph showing internet usage" class="w-full h-auto rounded-md shadow-sm mb-4">
+                            <p class="text-sm text-stone-500">Note: The actual graph image from your document is not directly embeddable here. This is a placeholder. Focus on the task and tips below.</p>
+                         </div>
+
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Tips for Writing Task 1</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <ul class="list-disc list-inside space-y-2">
+                                         <li><span class="font-semibold">Introduction:</span> Paraphrase the question.</li>
+                                         <li><span class="font-semibold">Overview:</span> State the major trends (increase/decrease/stable) without specific data.</li>
+                                         <li><span class="font-semibold">Body:</span> Use data to support your points and make comparisons.</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Useful Vocabulary for Task 1</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                         <div><span class="font-semibold">Increase:</span> Rose significantly, Grew steadily, Peaked at</div>
+                                         <div><span class="font-semibold">Decrease:</span> Dropped slightly, Declined sharply, Fell to</div>
+                                         <div><span class="font-semibold">Stable:</span> Remained constant, Showed no change, Maintained the level</div>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                         
+                         <h4 class="font-semibold text-lg mt-6 mb-2">Your Writing Space</h4>
+                         <textarea id="writing-task1-textarea" class="w-full p-4 border border-stone-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 h-64 resize-y" placeholder="Start writing your report here..."></textarea>
+                         <button id="submit-writing-task1" class="mt-4 bg-teal-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors">Submit My Report</button>
+                         <p id="writing-feedback" class="mt-2 text-sm text-stone-600"></p>
+                     </div>
+                     <div class="tab-content hidden" id="writing-task1-gt">
+                         <h3 class="text-xl font-semibold mb-2">General Training Writing Task 1: Letter Writing</h3>
+                         <p class="mb-4 text-stone-600">In this task, you will write a letter based on a given situation. You need to write at least 150 words. Focus on the purpose, tone, and including all required points.</p>
+                         <div class="bg-stone-100 p-4 rounded-lg mb-6">
+                            <h4 class="font-semibold text-lg mb-2">Prompt: Complaint Letter</h4>
+                            <p class="text-stone-700">You recently bought an electronic device that has stopped working. Write a letter to the store manager. In your letter:</p>
+                            <ul class="list-disc list-inside ml-4 mt-2 text-stone-700">
+                                <li>Describe the device and when you bought it.</li>
+                                <li>Explain what is wrong with it.</li>
+                                <li>State what action you would like the manager to take.</li>
+                            </ul>
+                         </div>
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Letter Writing Structure & Tips</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <ul class="list-disc list-inside space-y-2">
+                                         <li><span class="font-semibold">Salutation:</span> Choose appropriate (Formal: Dear Mr./Ms. Smith, Informal: Dear John).</li>
+                                         <li><span class="font-semibold">Opening:</span> Clearly state the purpose of your letter.</li>
+                                         <li><span class="font-semibold">Body Paragraphs:</span> Address each bullet point from the prompt in separate paragraphs.</li>
+                                         <li><span class="font-semibold">Closing:</span> A polite closing sentence (e.g., "I look forward to hearing from you.").</li>
+                                         <li><span class="font-semibold">Sign-off:</span> Appropriate closing (e.g., "Yours sincerely," "Best regards,").</li>
+                                         <li><span class="font-semibold">Tone:</span> Ensure the tone (formal, semi-formal, informal) matches the recipient and purpose.</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <h4 class="font-semibold text-lg mt-6 mb-2">Your Writing Space</h4>
+                         <textarea id="writing-task1-gt-textarea" class="w-full p-4 border border-stone-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 h-64 resize-y" placeholder="Start writing your letter here..."></textarea>
+                         <button id="submit-writing-task1-gt" class="mt-4 bg-teal-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors">Submit My Letter</button>
+                         <p id="writing-gt-feedback" class="mt-2 text-sm text-stone-600"></p>
+                     </div>
+                     <div class="tab-content hidden" id="writing-task2">
+                         <h3 class="text-xl font-semibold mb-2">Writing Task 2: Essay Writing</h3>
+                         <p class="mb-4 text-stone-600">You will write an essay of at least 250 words in response to a point of view, argument, or problem. This task is worth more marks than Task 1.</p>
+                         <div class="bg-stone-100 p-4 rounded-lg mb-6">
+                            <h4 class="font-semibold text-lg mb-2">Prompt: Discuss Both Views</h4>
+                            <p class="text-stone-700">Some people believe that the best way to improve public health is by increasing the number of sports facilities. Others, however, argue that this would have little effect and that other measures are more important. Discuss both these views and give your own opinion.</p>
+                         </div>
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Essay Structure</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <ol class="list-decimal list-inside space-y-2">
+                                         <li><span class="font-semibold">Introduction:</span> Paraphrase the prompt and state your clear thesis statement/opinion.</li>
+                                         <li><span class="font-semibold">Body Paragraphs (2-3):</span> Each with a clear topic sentence, explanation, and relevant examples.</li>
+                                         <li><span class="font-semibold">Conclusion:</span> Summarize main points and reiterate your opinion.</li>
+                                     </ol>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Common Essay Types & Tips</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <ul class="list-disc list-inside space-y-2">
+                                         <li><span class="font-semibold">Opinion Essays (Agree/Disagree):</span> Clearly state and consistently support your opinion.</li>
+                                         <li><span class="font-semibold">Discussion Essays (Discuss both views):</span> Present both sides fairly, then give your clear personal opinion.</li>
+                                         <li><span class="font-semibold">Problem/Solution Essays:</span> Identify problems and propose viable solutions.</li>
+                                         <li><span class="font-semibold">Advantage/Disadvantage Essays:</span> Discuss the pros and cons of a topic.</li>
+                                         <li><span class="font-semibold">Direct Question Essays:</span> Answer specific questions directly and comprehensively.</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <h4 class="font-semibold text-lg mt-6 mb-2">Your Writing Space</h4>
+                         <textarea id="writing-task2-textarea" class="w-full p-4 border border-stone-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 h-64 resize-y" placeholder="Start writing your essay here..."></textarea>
+                         <button id="submit-writing-task2" class="mt-4 bg-teal-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors">Submit My Essay</button>
+                         <p id="writing-essay-feedback" class="mt-2 text-sm text-stone-600"></p>
+                     </div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- Speaking Section -->
+        <section id="speaking" class="pt-20 -mt-20">
+             <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12">
+                <h2 class="text-3xl font-bold text-teal-700 mb-2">🗣️ Speaking Module</h2>
+                <p class="text-stone-600 mb-6">Build your confidence and ability to speak fluently and coherently. This module covers all three parts of the speaking test, from personal questions to abstract discussions. Practice by recording your answers!</p>
+                 <div class="mb-6 flex flex-wrap gap-2" id="speaking-tabs">
+                     <button class="tab-button active px-4 py-2 text-sm font-semibold rounded-full bg-stone-200" data-target="speaking-part1">Part 1: Interview</button>
+                     <button class="tab-button px-4 py-2 text-sm font-semibold rounded-full bg-stone-200" data-target="speaking-part2">Part 2: Cue Card</button>
+                     <button class="tab-button px-4 py-2 text-sm font-semibold rounded-full bg-stone-200" data-target="speaking-part3">Part 3: Discussion</button>
+                 </div>
+                  <div id="speaking-content">
+                     <div class="tab-content" id="speaking-part1">
+                         <h3 class="text-xl font-semibold mb-2">Part 1: Interview Practice</h3>
+                         <p class="mb-4 text-stone-600">The examiner will ask you general questions about yourself and familiar topics. Aim to give 2-3 sentence responses.</p>
+                          <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Common Topics & Questions</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <h5 class="font-semibold text-md mb-2">Hometown / Home</h5>
+                                     <ul class="list-disc list-inside space-y-1">
+                                         <li>Where are you from?</li>
+                                         <li>What do you like about your hometown?</li>
+                                         <li>What kind of house do you live in?</li>
+                                     </ul>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Work or Studies</h5>
+                                     <ul class="list-disc list-inside space-y-1">
+                                         <li>Do you work or study?</li>
+                                         <li>What do you enjoy most about your job/course?</li>
+                                         <li>Would you like to change your job/study field in the future?</li>
+                                     </ul>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Daily Routine</h5>
+                                     <ul class="list-disc list-inside space-y-1">
+                                         <li>What’s your daily routine like?</li>
+                                         <li>Is there anything you’d like to change in it?</li>
+                                     </ul>
+                                     <h5 class="font-semibold text-md mb-2 mt-4">Food & Cooking</h5>
+                                     <ul class="list-disc list-inside space-y-1">
+                                         <li>Do you enjoy cooking?</li>
+                                         <li>What kind of food do you like?</li>
+                                         <li>Do you prefer eating out or at home?</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Evaluation Criteria</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <ul class="list-disc list-inside space-y-2">
+                                         <li>Use natural linking phrases: "Actually...", "I guess...", "Well, to be honest..."</li>
+                                         <li>Avoid just saying “Yes/No.” Add details, opinions, or examples.</li>
+                                         <li>Pronounce clearly. Speak slowly if needed.</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <h4 class="font-semibold text-lg mt-6 mb-2">Record Your Answer</h4>
+                         <div class="flex flex-col items-center p-4 bg-stone-100 rounded-lg">
+                             <div class="flex space-x-4 mb-4">
+                                 <button id="startRecording" class="bg-teal-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors">Start Recording</button>
+                                 <button id="stopRecording" class="bg-amber-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors" disabled>Stop Recording</button>
+                                 <button id="playRecording" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors" disabled>Play Recording</button>
+                             </div>
+                             <p id="recordingStatus" class="text-stone-700 mb-2">Ready to record.</p>
+                             <audio id="audioPlayback" controls class="w-full max-w-md hidden"></audio>
+                             <button id="uploadRecording" class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors mt-4" disabled>Simulate Upload</button>
+                             <p id="uploadStatus" class="text-sm text-stone-600 mt-2"></p>
+                         </div>
+                     </div>
+                     <div class="tab-content hidden" id="speaking-part2">
+                         <h3 class="text-xl font-semibold mb-2">Part 2: Cue Card Practice</h3>
+                         <p class="mb-4 text-stone-600">You will be given a cue card with a topic and bullet points. You have 1 minute to prepare and then speak for 1-2 minutes. Choose a cue card below to practice.</p>
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Cue Card 1: Describe a foreign country you would like to visit</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <p><span class="font-semibold">You should say:</span></p>
+                                     <ul class="list-disc list-inside space-y-1">
+                                         <li>Which country it is</li>
+                                         <li>When you would like to go</li>
+                                         <li>What you would like to see or do there</li>
+                                         <li>And explain why</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Cue Card 2: Describe a rule important in your school or at work</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <p><span class="font-semibold">You should say:</span></p>
+                                     <ul class="list-disc list-inside space-y-1">
+                                         <li>What the rule is</li>
+                                         <li>Who made the rule</li>
+                                         <li>How people follow it</li>
+                                         <li>And explain why it’s important</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Cue Card 3: Describe an area/subject of science that interests you</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <p><span class="font-semibold">You should say:</span></p>
+                                     <ul class="list-disc list-inside space-y-1">
+                                         <li>What subject it is</li>
+                                         <li>How you became interested</li>
+                                         <li>What you know so far</li>
+                                         <li>And explain why you want to learn more</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Cue Card 4: Describe a time you made a promise to someone</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <p><span class="font-semibold">You should say:</span></p>
+                                     <ul class="list-disc list-inside space-y-1">
+                                         <li>Who you made the promise to</li>
+                                         <li>What the promise was</li>
+                                         <li>Whether you kept it</li>
+                                         <li>And explain why it was important</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Cue Card 5: Describe a line from a poem or song you remember</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <p><span class="font-semibold">You should say:</span></p>
+                                     <ul class="list-disc list-inside space-y-1">
+                                         <li>What the line is</li>
+                                         <li>Where you read or heard it</li>
+                                         <li>What it means</li>
+                                         <li>And explain why it remains memorable</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Cue Card 6: Describe an energetic person that you know</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <p><span class="font-semibold">You should say:</span></p>
+                                     <ul class="list-disc list-inside space-y-1">
+                                         <li>Who this person is</li>
+                                         <li>How you know them</li>
+                                         <li>What they do to stay energetic</li>
+                                         <li>And explain how their energy influences you</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <h4 class="font-semibold text-lg mt-6 mb-2">Record Your Answer</h4>
+                         <div class="flex flex-col items-center p-4 bg-stone-100 rounded-lg">
+                             <div class="flex space-x-4 mb-4">
+                                 <button id="startRecording2" class="bg-teal-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors">Start Recording</button>
+                                 <button id="stopRecording2" class="bg-amber-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors" disabled>Stop Recording</button>
+                                 <button id="playRecording2" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors" disabled>Play Recording</button>
+                             </div>
+                             <p id="recordingStatus2" class="text-stone-700 mb-2">Ready to record.</p>
+                             <audio id="audioPlayback2" controls class="w-full max-w-md hidden"></audio>
+                             <button id="uploadRecording2" class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors mt-4" disabled>Simulate Upload</button>
+                             <p id="uploadStatus2" class="text-sm text-stone-600 mt-2"></p>
+                         </div>
+                     </div>
+                     <div class="tab-content hidden" id="speaking-part3">
+                         <h3 class="text-xl font-semibold mb-2">Part 3: Follow-Up Discussion Exercises</h3>
+                         <p class="mb-4 text-stone-600">This part involves a more abstract and analytical discussion, extending themes from Part 2. Show deeper thinking and logical reasoning.</p>
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Types of Questions</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <ul class="list-disc list-inside space-y-1">
+                                         <li>Opinion-based (“What do you think about…?”)</li>
+                                         <li>Hypothetical (“How would things be different if…?”)</li>
+                                         <li>Comparative (“How has technology changed communication?”)</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Exercise Set 1: Society & Technology</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <ul class="list-disc list-inside space-y-1">
+                                         <li>Do you think people communicate better now than in the past?</li>
+                                         <li>In what ways has social media changed how we express ourselves?</li>
+                                         <li>Should children be taught how to use the internet responsibly in schools?</li>
+                                     </ul>
+                                     <p class="mt-2 font-semibold">Practice Tip:</p>
+                                     <p>Use structure – Opinion + Reason + Example: "Yes, I believe communication has improved because… For example…"</p>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Exercise Set 2: Education & Learning</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <ul class="list-disc list-inside space-y-1">
+                                         <li>How is education today different from the past?</li>
+                                         <li>Do you think exams are the best way to measure a student’s ability?</li>
+                                         <li>How important is it for people to learn a second language?</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200 mb-4">
+                             <div class="accordion-header flex justify-between items-center p-4">
+                                 <h4 class="font-semibold text-lg">Exercise Set 3: Environment & Lifestyle</h4>
+                                 <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                             </div>
+                             <div class="accordion-content">
+                                 <div class="p-4 border-t border-stone-200 text-stone-600">
+                                     <ul class="list-disc list-inside space-y-1">
+                                         <li>Should individuals take more responsibility for protecting the environment?</li>
+                                         <li>How can governments encourage eco-friendly habits?</li>
+                                         <li>What are the advantages and disadvantages of living in a big city?</li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <h4 class="font-semibold text-lg mt-6 mb-2">Record Your Answer</h4>
+                         <div class="flex flex-col items-center p-4 bg-stone-100 rounded-lg">
+                             <div class="flex space-x-4 mb-4">
+                                 <button id="startRecording3" class="bg-teal-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors">Start Recording</button>
+                                 <button id="stopRecording3" class="bg-amber-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors" disabled>Stop Recording</button>
+                                 <button id="playRecording3" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors" disabled>Play Recording</button>
+                             </div>
+                             <p id="recordingStatus3" class="text-stone-700 mb-2">Ready to record.</p>
+                             <audio id="audioPlayback3" controls class="w-full max-w-md hidden"></audio>
+                             <button id="uploadRecording3" class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors mt-4" disabled>Simulate Upload</button>
+                             <p id="uploadStatus3" class="text-sm text-stone-600 mt-2"></p>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- Vocabulary & Grammar Section -->
+        <section id="vocabulary" class="pt-20 -mt-20">
+             <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12">
+                <h2 class="text-3xl font-bold text-teal-700 mb-2">📚 Vocabulary & Grammar</h2>
+                <p class="text-stone-600 mb-6">A strong foundation in grammar and a wide range of vocabulary are essential for a high score in all four sections of the IELTS test.</p>
+                 <div class="space-y-4">
+                    <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200">
+                        <div class="accordion-header flex justify-between items-center p-4">
+                            <h4 class="font-semibold text-lg">Academic Vocabulary</h4>
+                            <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="p-4 border-t border-stone-200">
+                                <ul class="list-disc list-inside space-y-2 text-stone-600">
+                                    <li><span class="font-semibold">Academic Word List (AWL):</span> Focus on high-frequency academic words. Example: *analyze, synthesize, evaluate, significant, comprehensive*.</li>
+                                    <li><span class="font-semibold">Collocations:</span> Learn words that naturally go together (e.g., 'conduct research', 'significant impact', 'draw conclusions', 'pose a threat').</li>
+                                    <li><span class="font-semibold">Topic-Specific Vocabulary:</span> Build word lists for common IELTS topics like environment (e.g., *deforestation, sustainable, biodiversity*), technology (e.g., *innovation, automation, digital divide*), and education (e.g., *pedagogy, curriculum, lifelong learning*).</li>
+                                    <li><span class="font-semibold">Synonyms & Antonyms:</span> Practice using a variety of words to avoid repetition and demonstrate lexical range.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item bg-stone-50 rounded-lg border border-stone-200">
+                        <div class="accordion-header flex justify-between items-center p-4">
+                            <h4 class="font-semibold text-lg">Grammatical Range & Accuracy</h4>
+                            <div class="icon-plus text-teal-600 text-2xl font-light">+</div>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="p-4 border-t border-stone-200">
+                               <ul class="list-disc list-inside space-y-2 text-stone-600">
+                                   <li><span class="font-semibold">Identify Common Errors:</span> Pay attention to mistakes with articles (a/an/the), prepositions (in/on/at), subject-verb agreement (e.g., 'The data *shows*', not 'The data *show*'), and tense consistency.</li>
+                                   <li><span class="font-semibold">Use Complex Structures:</span> Practice using a mix of simple and complex sentences to demonstrate range. Examples:
+                                       <ul class="list-circle list-inside ml-4">
+                                           <li><span class="font-semibold">Conditional Sentences:</span> "If governments invest more, public transport will improve."</li>
+                                           <li><span class="font-semibold">Relative Clauses:</span> "Social media, *which is widely used*, has transformed communication."</li>
+                                           <li><span class="font-semibold">Passive Voice:</span> "Research *is being conducted* to find new energy sources."</li>
+                                           <li><span class="font-semibold">Noun Clauses:</span> "It is widely believed *that education is key to success*."</li>
+                                       </ul>
+                                   </li>
+                                   <li><span class="font-semibold">Punctuation:</span> Ensure correct use of commas, periods, semicolons, and apostrophes.</li>
+                               </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white mt-12 border-t border-stone-200">
+        <div class="container mx-auto px-8 py-6 text-center text-stone-500">
+            <p>&copy; 2025 IELTS Prep Hub. An interactive guide for student success.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const accordionItems = document.querySelectorAll('.accordion-item');
+
+            accordionItems.forEach(item => {
+                const header = item.querySelector('.accordion-header');
+                const content = item.querySelector('.accordion-content');
+
+                header.addEventListener('click', () => {
+                    const isOpen = content.classList.contains('open');
+                    
+                    document.querySelectorAll('.accordion-content').forEach(c => {
+                        if (c !== content) {
+                           c.classList.remove('open');
+                           c.previousElementSibling.classList.remove('open');
+                        }
+                    });
+
+                    if (isOpen) {
+                        content.classList.remove('open');
+                        header.classList.remove('open');
+                    } else {
+                        content.classList.add('open');
+                        header.classList.add('open');
+                    }
+                });
+            });
+
+            function setupTabs(containerId) {
+                const tabContainer = document.getElementById(containerId);
+                if (!tabContainer) return;
+
+                const tabs = tabContainer.querySelectorAll('.tab-button');
+                const contentContainer = tabContainer.nextElementSibling;
+                const contents = contentContainer.querySelectorAll('.tab-content');
+
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        tabs.forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+
+                        const targetId = tab.dataset.target;
+                        contents.forEach(content => {
+                            if (content.id === targetId) {
+                                content.classList.remove('hidden');
+                            } else {
+                                content.classList.add('hidden');
+                            }
+                        });
+                    });
+                });
+            }
+
+            setupTabs('listening-tabs');
+            setupTabs('reading-tabs');
+            setupTabs('writing-tabs');
+            setupTabs('speaking-tabs');
+
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('#main-nav a');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.3
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+            
+            let scoreChart;
+            const createOrUpdateChart = (listening, reading, writing, speaking) => {
+                const ctx = document.getElementById('scoreChart').getContext('2d');
+                const overall = ((listening + reading + writing + speaking) / 4).toFixed(2);
+                const roundedOverall = (Math.round(overall * 2) / 2).toFixed(1);
+
+                const data = {
+                    labels: ['Listening', 'Reading', 'Writing', 'Speaking', 'Overall'],
+                    datasets: [{
+                        label: 'IELTS Band Score',
+                        data: [listening, reading, writing, speaking, roundedOverall],
+                        backgroundColor: [
+                            'rgba(20, 184, 166, 0.2)',
+                            'rgba(20, 184, 166, 0.2)',
+                            'rgba(20, 184, 166, 0.2)',
+                            'rgba(20, 184, 166, 0.2)',
+                            'rgba(217, 119, 6, 0.4)'
+                        ],
+                        borderColor: [
+                            'rgb(13, 148, 136)',
+                            'rgb(13, 148, 136)',
+                            'rgb(13, 148, 136)',
+                            'rgb(13, 148, 136)',
+                            'rgb(217, 119, 6)'
+                        ],
+                        borderWidth: 1.5
+                    }]
+                };
+
+                if(scoreChart) {
+                    scoreChart.data = data;
+                    scoreChart.update();
+                } else {
+                     scoreChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 9,
+                                    ticks: {
+                                        stepSize: 1
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            if (context.parsed.y !== null) {
+                                                label += context.parsed.y.toFixed(1);
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            const randomizeScores = () => {
+                const randomScore = () => (Math.round((Math.random() * 5 + 4) * 2) / 2).toFixed(1);
+                createOrUpdateChart(
+                    parseFloat(randomScore()),
+                    parseFloat(randomScore()),
+                    parseFloat(randomScore()),
+                    parseFloat(randomScore())
+                );
+            };
+
+            document.getElementById('randomizeScores').addEventListener('click', randomizeScores);
+
+            createOrUpdateChart(7.0, 6.5, 6.0, 7.5);
+
+            // --- Speaking Recording Logic ---
+            const setupRecorder = (startButtonId, stopButtonId, playButtonId, audioPlaybackId, statusId, uploadButtonId, uploadStatusId) => {
+                const startButton = document.getElementById(startButtonId);
+                const stopButton = document.getElementById(stopButtonId);
+                const playButton = document.getElementById(playButtonId);
+                const audioPlayback = document.getElementById(audioPlaybackId);
+                const recordingStatus = document.getElementById(statusId);
+                const uploadButton = document.getElementById(uploadButtonId);
+                const uploadStatus = document.getElementById(uploadStatusId);
+
+                let mediaRecorder;
+                let audioChunks = [];
+                let audioBlob = null;
+
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    recordingStatus.textContent = 'Recording not supported in this browser.';
+                    startButton.disabled = true;
+                    return;
+                }
+
+                startButton.addEventListener('click', async () => {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        mediaRecorder = new MediaRecorder(stream);
+                        audioChunks = [];
+                        audioPlayback.classList.add('hidden');
+                        playButton.disabled = true;
+                        uploadButton.disabled = true;
+                        uploadStatus.textContent = '';
+
+                        mediaRecorder.ondataavailable = event => {
+                            audioChunks.push(event.data);
+                        };
+
+                        mediaRecorder.onstop = () => {
+                            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                            const audioUrl = URL.createObjectURL(audioBlob);
+                            audioPlayback.src = audioUrl;
+                            audioPlayback.classList.remove('hidden');
+                            playButton.disabled = false;
+                            uploadButton.disabled = false;
+                            recordingStatus.textContent = 'Recording stopped. Ready to play or upload.';
+                            stream.getTracks().forEach(track => track.stop());
+                        };
+
+                        mediaRecorder.start();
+                        recordingStatus.textContent = 'Recording...';
+                        startButton.disabled = true;
+                        stopButton.disabled = false;
+                    } catch (err) {
+                        console.error('Error accessing microphone:', err);
+                        recordingStatus.textContent = 'Error accessing microphone. Please allow access.';
+                        startButton.disabled = false;
+                        stopButton.disabled = true;
+                    }
+                });
+
+                stopButton.addEventListener('click', () => {
+                    if (mediaRecorder && mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                        startButton.disabled = false;
+                        stopButton.disabled = true;
+                    }
+                });
+
+                playButton.addEventListener('click', () => {
+                    if (audioPlayback.src && audioPlayback.src !== window.location.href) {
+                        audioPlayback.play();
+                        recordingStatus.textContent = 'Playing recording...';
+                        audioPlayback.onended = () => {
+                            recordingStatus.textContent = 'Recording playback finished.';
+                        };
+                    }
+                });
+
+                uploadButton.addEventListener('click', () => {
+                    if (audioBlob) {
+                        uploadStatus.textContent = 'Simulating upload... (Audio data logged to console)';
+                        console.log('Simulated Audio Upload:', audioBlob);
+                        console.log('Audio URL (for local playback):', URL.createObjectURL(audioBlob));
+                        setTimeout(() => {
+                            uploadStatus.textContent = 'Audio uploaded successfully!';
+                            uploadButton.disabled = true;
+                        }, 1500);
+                    } else {
+                        uploadStatus.textContent = 'No audio to upload.';
+                    }
+                });
+            };
+
+            setupRecorder('startRecording', 'stopRecording', 'playRecording', 'audioPlayback', 'recordingStatus', 'uploadRecording', 'uploadStatus');
+            setupRecorder('startRecording2', 'stopRecording2', 'playRecording2', 'audioPlayback2', 'recordingStatus2', 'uploadRecording2', 'uploadStatus2');
+            setupRecorder('startRecording3', 'stopRecording3', 'playRecording3', 'audioPlayback3', 'recordingStatus3', 'uploadRecording3', 'uploadStatus3');
+
+            // --- Writing Activity Logic ---
+            const setupWritingActivity = (textareaId, submitButtonId, feedbackId) => {
+                const textarea = document.getElementById(textareaId);
+                const submitButton = document.getElementById(submitButtonId);
+                const feedback = document.getElementById(feedbackId);
+
+                if (!textarea || !submitButton || !feedback) return;
+
+                submitButton.addEventListener('click', () => {
+                    const content = textarea.value.trim();
+                    if (content.length > 0) {
+                        feedback.textContent = 'Your response has been submitted! (Content logged to console)';
+                        feedback.classList.remove('text-red-500');
+                        feedback.classList.add('text-green-600');
+                        console.log('Writing Activity Submitted:', content);
+                    } else {
+                        feedback.textContent = 'Please write something before submitting.';
+                        feedback.classList.remove('text-green-600');
+                        feedback.classList.add('text-red-500');
+                    }
+                });
+            };
+
+            setupWritingActivity('writing-task1-textarea', 'submit-writing-task1', 'writing-feedback');
+            setupWritingActivity('writing-task1-gt-textarea', 'submit-writing-task1-gt', 'writing-gt-feedback');
+            setupWritingActivity('writing-task2-textarea', 'submit-writing-task2', 'writing-essay-feedback');
+        });
+    </script>
+</body>
+</html>
